@@ -7,13 +7,35 @@ import re
 from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
+    '''
+    load_data
+    Loads data from messages_filepath and categories_filepath csvs;
+    merges dataframes.
+
+    Input:
+    messages_filepath   Path to messages csv file
+    categories_filepath Path to categories csv file
+
+    Returns:
+    df  Messages and categories merged DataFrame
+    '''
+
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
     df = messages.merge(categories, on="id")
     return df
 
 def clean_data(df):
-    
+    '''
+    clean_data
+    Create a dataframe of the 36 individual category columns
+
+    Input:
+    df   Merged messages and categories DataFrame
+
+    Returns:
+    df  Categories DataFrame
+    '''
     # create a dataframe of the 36 individual category columns
     categories = df['categories'].str.split(";", expand=True)
 
@@ -27,10 +49,11 @@ def clean_data(df):
     # rename the columns of `categories`
     categories.columns = category_colnames
 
-    for column in categories:
+    for column in category_colnames:
         # set each value to be the last character of the string
         # convert column from string to numeric
         categories[column] = categories[column].str[-1]
+        categories[categories[column] == '2'] = '1'
         categories[column] = categories[column].astype(int)
 
     # drop the original categories column from `df`
@@ -45,11 +68,29 @@ def clean_data(df):
     return df   
 
 def save_data(df, database_filename):
+    '''
+    save_data
+    Saves data to database_filename .db database
+
+    Input:
+    df  DataFrame
+    database_filename Path to .db database
+
+    Returns:
+    '''
     engine = create_engine('sqlite:///' + database_filename)
     df.to_sql('messages', engine, index=False, if_exists='replace')  
 
 
 def main():
+    '''
+    main
+    Loads messages and categories; 
+    merges DataFrames;
+    creates separate categories DataFrame; 
+    saves DataFrame to .db Database
+    '''
+
     if len(sys.argv) == 4:
 
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
