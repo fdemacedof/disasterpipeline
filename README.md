@@ -12,3 +12,13 @@
     `python run.py`
 
 3. Go to http://0.0.0.0:3001/
+
+### About the algorithm
+
+1. Raw text was tokenized, lemmatized and cleaned (numbers outside words and punctuation were removed)
+
+2. Sentence2Vectorizer() is a custom transform that uses Word2Vector to create vectors representing messages or sentences: 
+    - A vector was created to designate each word in the whole of the text messages. 
+    - For each message, the mean of the word vectors is calculated.
+    
+3. I used a random forest classifier - though other algorithms might perform best - because of hardware limitations.
