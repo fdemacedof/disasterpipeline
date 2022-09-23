@@ -80,7 +80,7 @@ def build_model():
     '''
 
     pipeline = Pipeline([('sentence2vector', s2v.Sentence2Vectorizer()),
-        ('clf', MultiOutputClassifier(XGBClassifier(max_depth=4,n_estimators=100)))
+        ('clf', MultiOutputClassifier(XGBClassifier(max_depth=6,n_estimators=100)))
     ])
 
     # parameters = {

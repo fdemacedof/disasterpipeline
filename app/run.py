@@ -33,6 +33,16 @@ df = pd.read_sql_table('messages', engine)
 # load model
 model = joblib.load("../models/classifier.pkl")
 
+X = df['message']
+Y = df.iloc[:,4:-1]
+# drop "child_alone" feature: only 0
+Y = Y.drop("child_alone", axis=1)
+Y_pred = pd.DataFrame(model.predict(X))
+Y_pred_sum = pd.DataFrame(Y_pred.sum(),columns=["count"])
+Y_sum = pd.DataFrame(Y.sum(),columns=["count"])
+Y_pred_sum['type'] = Y.columns
+Y_sum['type'] = Y.columns
+
 
 # index webpage displays cool visuals and receives user input text for model
 @app.route('/')
@@ -43,6 +53,10 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
+    classification_counts_Y = Y_sum['count']
+    classification_names_Y = Y_sum['type']
+    classification_counts_Y_pred = Y_pred_sum['count']
+    classification_names_Y_pred = Y_pred_sum['type']
     
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
@@ -64,15 +78,53 @@ def index():
                     'title': "Genre"
                 }
             }
+        },
+
+        {
+            'data': [
+                Bar(
+                    x=classification_counts_Y,
+                    y=classification_names_Y
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of Message Classification in Original Data',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Classification"
+                }
+            }
+        },
+        
+        {
+            'data': [
+                Bar(
+                    x=classification_counts_Y,
+                    y=classification_names_Y
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of Message Classification in Prediction',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Classification"
+                }
+            }
         }
     ]
     
     # encode plotly graphs in JSON
-    ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]
+    graph_ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]
     graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
     
     # render web page with plotly graphs
-    return render_template('master.html', ids=ids, graphJSON=graphJSON)
+    return render_template('master.html', ids=graph_ids, graphJSON=graphJSON)
 
 
 # web page that handles user query and displays model results
